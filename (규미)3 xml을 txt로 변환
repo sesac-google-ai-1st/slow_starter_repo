@@ -176,7 +176,7 @@ for xmlFile in xmlList:
 ★glob는 파일들의 리스트를 뽑을 때 사용하는데, 
 파일의 경로명을 이용할 수 있다.
 위의 glob() 함수는 인자로 받은 패턴과 이름이 일치하는 모든 파일과 디렉터리의 리스트를 반환한다. 
-패턴을 그냥 *라고 주면 모든 파일과 디렉터리를 볼 수 있다.
+패턴을 *라고 주면 모든 파일과 디렉터리를 볼 수 있다.
 
 dataPath='/home/jupyter/myData/val/xml_labels'
 destPath='/home/jupyter/myData/val/labels'
