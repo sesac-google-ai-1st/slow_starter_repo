@@ -35,7 +35,7 @@
 ===================================================================
 
 ### 01-1. 앞에서 생성한 dataset폴더에 버킷 마운트하기  
-```
+```python
 BUCKET_NAME = 'yolostudy'
 MOUNT_PATH ='/home/jupyter/dataset' 
 !gcsfuse --implicit-dirs {BUCKET_NAME} {MOUNT_PATH}
@@ -45,7 +45,7 @@ MOUNT_PATH ='/home/jupyter/dataset'
 
 ### 01-2. 압축풀기 (참고: highway_project.ipynb )
 - 여러가지 압축푸는 방식 존재, 분할압축하여 버킷에 업로드 했다면 분할된 압축파일을 다시 재압축 후 unzip 해야함
-```
+```python
 !zip -s 0 image.zip --out iamge_total.zip
 ```
 
@@ -55,7 +55,7 @@ MOUNT_PATH ='/home/jupyter/dataset'
 2) 현재 컴퓨터의 가용 CPU Core를 전부 사용하여 압축을 푸는 multiprocessing 기능 사용
    - 압축푸는 시간 크게 단축됨.
 
-```
+```python
 %%time
 %cd ~/
 
@@ -106,7 +106,7 @@ with concurrent.futures.ProcessPoolExecutor(max_workers=cpu_num-2) as executor:
 - train,val 폴더 아래에 각각 images, labels 폴더 아래에 데이터가 위치해야함
 - 기존 구성에서 iamges 폴더 아래에 여러개의 폴더에 나뉘어서 데이터가 위치하였으므로 각각의 폴더 내부의 접근하여 데이터를 옮기는 함수를 작성하여 실행
 - 함수 선언(2중 for문형태의 코드를 간편화 하기 위해 내부 for문을 함수로 지정하여 따로 선언)
-```
+```python
 # images_total 하위의 폴더명 리스트를 전달받은 후,
 # 해당 폴더 아래에 접근하여 폴더 내에 존재하는 이미지 파일들을 목적지(dstDir)로 옮기는 함수 선언
 # 전달받을 parameter:
@@ -122,7 +122,7 @@ def move_files(baseDir, srcFiles, dstDir):
         shutil.move(srcFilePath, dstDir) # 경로가 저장된 각각의 이미지파일을 롬기는 명령 실행
 ```
 - 함수 호출(images 폴더 아래에 각 폴더에 접근할떄마다 해당 폴더 아래의 데이터를 옮기는 코드 실행)
-```
+```python
 %%time
 ## image파일만 옮기기 실행, label 데이터는 xml파일을 txt파일로 변환하면서 저장 예정
 ## images_total 아래에 있는 각각의 폴더에 있는 png 파일을 전부 추출해 iamges폴더로 옮기기
@@ -172,7 +172,7 @@ for dirName in dirNames:
 print("fileNumCounter:{}".format(fileNumCounter))
 ```
 - 실행 결과
-```
+```python
 dir:Suwon_CH02_20200720_2130_MON_9m_NH_highway_TW5_sunny_FHD, fileNum:150
 dir:Suwon_CH04_20201012_1838_MON_9m_RH_highway_OW5_sunny_FHD, fileNum:150
 dir:Suwon_CH04_20200721_1830_TUE_9m_RH_highway_OW5_sunny_FHD, fileNum:150
@@ -210,7 +210,7 @@ Wall time: 141 ms
    - 텍스트 파일은 'Suwon_CH02_20200721_2130_TUE_9m_NH_highway_TW5_sunny_FHD 001.txt'
    - txt파일명에 언더바 대신 공백이 있는 것 확인
    - 아래 코드로 txt 파일명에 언더바(_) 추가 하여 해결
-   ```
+   ```python
    falseLabels = glob('/home/jupyter/highway/train/labels/Suwon_CH02_20200721_2130*.txt')
 
    for falseLabel in falseLabels:
@@ -229,7 +229,7 @@ Wall time: 141 ms
    - Suwon_CH03_20200722_1900_WED_9m_NH_highway_OW5_sunny_FHD_052.txt
 - 원본 압축파일에서 확인해본 결과 해당 파일이 없는것을 확인
 - 결측치로 판단하여 labels 폴더에서 해당 텍스트 파일 삭제하는 코드 작성하여 실행
-```
+```python
 # split_labelfiles 에는 labels폴더 하위의 데이터리스트들의 이름이 담겨잇음 
 true_count=0
 false_count=0
@@ -251,7 +251,7 @@ print(f'false_count:{false_count}')
 ```
 - val 데이터 폴더 아래에서도 한개의 label 파일이 많은것을 확인하여 차집합 계산식을 활용해 검출하여 삭제함
    - 결측 파일 검출 
-   ```
+   ```python
    s1 = set(split_imagefiles)
    len(s1)
    s2 = set(split_labelfiles)
@@ -259,11 +259,11 @@ print(f'false_count:{false_count}')
    s2-s1
    ```
 
-   ```
+   ```python
    {'Suwon_CH02_20200721_2030_TUE_9m_NH_highway_TW5_sunny_FHD_001'}
    ```
    - 결측 파일 삭제
-  ```
+  ```python
    os.remove('/home/jupyter/highway/val/labels/Suwon_CH02_20200721_2030_TUE_9m_NH_highway_TW5_sunny_FHD_001.txt')
   ```
 ===================================================================
@@ -282,7 +282,7 @@ print(f'false_count:{false_count}')
 ### 03. 모델 학습시키기 (참조: 고속도로CCTV데이터기반차량인식.ipynb)
 
 1) 1차 테스트:nano model test - epochs=75 설정
-```
+```python
 !yolo task=detect mode=train model=yolov8n.pt data={dataYaml} epochs=75 imgsz=640 plots=True batch=16 device=0,1 cache=True
 ```
 
@@ -294,7 +294,7 @@ print(f'false_count:{false_count}')
 <br><br>
 
 2) 2차 테스트: nano model test - epochs=150 설정
-```
+```python
 !yolo task=detect mode=train model=yolov8n.pt data={dataYaml} epochs=150 imgsz=640 plots=True batch=16 device=0,1 cache=True
 ```
 
