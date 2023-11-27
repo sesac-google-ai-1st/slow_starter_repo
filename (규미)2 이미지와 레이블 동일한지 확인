@@ -1,0 +1,125 @@
+😊😊 이미지와 레이블이 동일한 폴더 동일한 파일이 존재하는지 확인 😊😊
+
+import os
+
+trainPath = '/home/jupyter/myData/train/'
+
+trainImagePath = os.path.join(trainPath,'images') 
+trainLabelPath = os.path.join(trainPath,'labels') 
+
+trainImagePath, trainLabelPath
+
+😊😊 이미지의 폴더와 레이블의 폴더의 이름과 갯수가 동일한지 😊😊
+
+ImagefolderName = os.listdir(trainImagePath)
+LabelfolderName = os.listdir(trainLabelPath)
+
+★os모듈의 listdir 함수를 이용해서 한 폴더내의 모든 파일을 리스트로 가져오는 방법이다.
+
+★모르겠다
+true_count=0
+false_count=0
+for folderName in ImagefolderName:
+    if folderName in LabelfolderName:
+        true_count+=1
+    else:
+        false_count+=1
+
+print(true_count)
+print(false_count)
+★모르겠다
+
+😊😊 폴더 내부의 파일명이 동일한지 확인 (폴더 한개 확인) 😊😊
+
+from glob import glob
+
+folderName = ImagefolderName[0]
+imagefullPath = os.path.join('/home/jupyter/myData/train/images/'+ folderName)
+labelfullPath = os.path.join('/home/jupyter/myData/train/labels/'+ folderName)
+#print(fullPath+'/*.png')
+imagefiles = glob(imagefullPath+'/*.png')
+labelfiles = glob(labelfullPath+'/*.txt')
+imagefiles
+# imagefiles에서 확장자 제거 + 앞에 경로 제거
+split_imagefiles =[]
+for imagefile in imagefiles:
+    split_imagefiles.append(os.path.basename(os.path.splitext(imagefile)[0]))
+#split_imagefiles
+
+# labelfiles에서 확장자 제거 + 앞에 경로 제거
+split_labelfiles =[]
+for labelfile in labelfiles:
+    split_labelfiles.append(os.path.basename(os.path.splitext(labelfile)[0]))
+#split_labelfiles
+
+true_count=0
+false_count=0
+for imagefile in split_imagefiles:
+    if imagefile in split_labelfiles:
+        true_count +=1
+    else:
+        false_count +=1
+
+print(true_count)
+print(false_count)
+
+😊😊 폴더 내부의 파일명이 동일한지 확인 (모든 폴더 확인) 😊😊
+
+from glob import glob
+
+for folderName in ImagefolderName:
+    imagefullPath = os.path.join('/home/jupyter/myData/train/images/'+ folderName)
+    labelfullPath = os.path.join('/home/jupyter/myData/train/labels/'+ folderName)
+    #print(fullPath+'/*.png')
+    imagefiles = glob(imagefullPath+'/*.png')
+    labelfiles = glob(labelfullPath+'/*.txt')
+    imagefiles
+    # imagefiles에서 확장자 제거 + 앞에 경로 제거
+    split_imagefiles =[]
+    for imagefile in imagefiles:
+        split_imagefiles.append(os.path.basename(os.path.splitext(imagefile)[0]))
+    #split_imagefiles
+
+    # labelfiles에서 확장자 제거 + 앞에 경로 제거
+    split_labelfiles =[]
+    for labelfile in labelfiles:
+        split_labelfiles.append(os.path.basename(os.path.splitext(labelfile)[0]))
+    #split_labelfiles
+
+    true_count=0
+    false_count=0
+    for imagefile in split_imagefiles:
+        if imagefile in split_labelfiles:
+            true_count +=1
+        else:
+            false_count +=1
+    if false_count>0 or true_count==0:
+        print("===================")
+        print(folderName)
+        print(true_count)
+        print(false_count)
+        print("===================")
+
+😊😊 txt파일명이 잘못된 것 수정 😊😊
+
+파일명에 언더바 대신 공백이 있음
+폴더명은 'Suwon_CH02_20200721_2130_TUE_9m_NH_highway_TW5_sunny_FHD'
+Suwon_CH02_20200721_2130_TUE_9m_NH_highway_TW5_sunny_FHD 001.txt
+
+falseLabels = glob('/home/jupyter/myData/train/labels/Suwon_CH02_20200721_2130_TUE_9m_NH_highway_TW5_sunny_FHD/*.txt')
+
+for falseLabel in falseLabels:
+    newLabel = falseLabel.replace(' ','_')
+    print(newLabel)
+    os.rename(falseLabel, newLabel)
+    
+
+★replace는 문자열을 변경하는 함수이다. 문자열 안에서 특정 문자를 새로운 문자로 변경하는 기능을 가지고 있다. 사용 방법은 '변수. replace(old, new, [count])' 형식으로 사용한다.
+- old : 현재 문자열에서 변경하고 싶은 문자
+- new: 새로 바꿀 문자
+- count: 변경할 횟수. 횟수는 입력하지 않으면 old의 문자열 전체를 변경한다. 기본값은 전체를 의미하는 count=-1로 지정되어있다. 
+
+
+
+★rename은 명시된 file의 이름을 변경하는 역할을 한다.
+위 코드는 해당 코드가 실행되는 디렉토리와 동일한 위치에 있는 falseLabel라는 파일의 이름을 newLabel로 변경한다.
