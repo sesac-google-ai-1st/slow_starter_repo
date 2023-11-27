@@ -1,18 +1,31 @@
-# TEAM NAME: slow_starter
-- MEMBER: 양한수, 김규미
+## Team Name: slow_starter
+- Member: 양한수, 김규미
 
 ## 프로젝트 목표
 - 실제 cctv 영상파일을 다운받아 사진화 하여 차량인식 테스트(차, 트럭, 버스)
 - 프로젝트 진행 과정에서 발생하는 에로사항 관찰 및 해결방식 학습
 
 ## 데이터 출처
-- Ai-Hub: 교통문제 해결을 위한 CCTV 교통 영상(고속도로) 파일 사용 [데이터 출처 바로가기](https://www.aihub.or.kr/aihubdata/data/view.do?currMenu=&topMenu=&aihubDataSe=data&dataSetSn=164)
-- 데이터 용량이 너무 커서(약 90GB), 각 train,val 데이터에서 CH01~04번 데이까지만 활용하기로 함
+- Ai-Hub: 교통문제 해결을 위한 CCTV 교통 영상(고속도로) 파일 사용 [(출처)](https://www.aihub.or.kr/aihubdata/data/view.do?currMenu=&topMenu=&aihubDataSe=data&dataSetSn=164)
+- 데이터 용량이 너무 커서(약 90GB), 각 train,val 데이터에서 CH01~04번 데이터(약 30GB)까지만 활용하기로 함
 
 ## 프로젝트 개발환경
 - PyTorch:2.0
 - Ultralytics YOLOv8.0.216
 - Python-3.10.13
+
+## 작업 과정
+
+### 00. 사전 작업 (참고: highway_project.ipynb )
+
+1) 데이터셋 파일 다운받은 후 신규 버킷 생성하여 업로드 진행
+   - 버킷 생성 시 (멀티리전/단일리전) 중 단일리전 으로 버킷 생성함(다른 리전에 접근할 경우가 없으므로 속도를 위해 선택)
+   - 대용량 파일이므로 한번에 업로드 중 네트워크 오류 발생시 다시 처음부터 업로드를 해야하는 위험성이 잇음
+   - 반디집을 이용해 분할 압축 후 버킷에 업로드 하여 테스트 진행 시 재압축하는식으로 하는 방식도 가능(문제 발생시 재업로드 편의성 증가)
+  
+   
+  
+
 
 
 
