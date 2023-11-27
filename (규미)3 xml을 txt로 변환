@@ -1,7 +1,7 @@
 import os
 folderList = os.listdir("/home/jupyter/myData")
 
-os.listdir()는 폴더 내에 든 모든 파일의 리스트를 파이썬 리스트의 형식으로 반환하는 메서드이다.
+★os.listdir()는 폴더 내에 든 모든 파일의 리스트를 파이썬 리스트의 형식으로 반환하는 메서드이다.
 (작업 과정의 예)
 한 폴더 내에 반복 작업할 파일을 모으기.
 os.listdir(폴더경로)를 통해서 폴더 내의 파일이름(+확장자) 리스트를 뽑아내기.
@@ -9,5 +9,99 @@ for 또는 while 반복문을 사용하여 각 파일에 대한 반복작업 수
 
 len(folderList)
 
-len(시퀀스)
+★len(시퀀스)
 시퀀스 또는 컬렉션: 길이를 확인하려는 데이터 구조로, 리스트, 문자열, 튜플, 딕셔너리, 집합 등의 자료형이 될 수 있다.
+
+!pip install lxml
+
+★pip install lxml : 구문을 분석하는 파서(Parser)
+파서 : 문장의 구조 분석·오류 점검 프로그램이다.
+
+import numpy as np
+import lxml 
+
+★!pip install을 했으면 import를 해야 한다.
+
+
+import os
+
+from lxml import etree
+
+★라이브러리 etree사용 xml은 트리 형태의 데이터 이다.
+
+CLASSES = ["car", "bus", "truck"]
+
+def to_yolov8(y):
+  """
+  # change to yolo v8 format
+  # [x_top_left, y_top_left, x_bottom_right, y_bottom_right] to
+  # [x_center, y_center, width, height]
+  """
+  width = y[2] - y[0]
+  height = y[3] - y[1]
+
+  if width < 0 or height < 0:
+      print("ERROR: negative width or height ", width, height, y)
+      raise AssertionError("Negative width or height")
+  return (y[0] + (width/2)), (y[1] + (height/2)), width, height
+
+★Raise가 Assert보다 큰 개념이다.
+assert 문을 사용하면 AssertionError 를 출력하면서 코드가 멈춘다.
+raise 문을 사용하면 AssertionError 뿐만 아니라 AttributeError, ImportError 등 기타 다른 에러도 출력할 수 있다.
+
+
+def load_xml_annotations(f):
+  tree = etree.parse(f)
+  anns = []
+  for dim in tree.xpath("image"):
+    image_filename = dim.attrib["name"]
+    width = int(dim.attrib["width"])
+    height = int(dim.attrib["height"])
+    # print(image_filename)
+    # print(len(dim.xpath("box")))
+    boxes = []
+    for box in dim.xpath("box"):
+      label = CLASSES.index(box.attrib["label"])
+      xtl, ytl = box.attrib["xtl"], box.attrib["ytl"]
+      xbr, ybr = box.attrib["xbr"], box.attrib["ybr"]
+
+      xc, yc, w, h = to_yolov8([float(xtl), float(ytl), float(xbr), float(ybr)])
+      boxes.append([label, round(xc/width, 5), round(yc/height, 5), round(w/width, 5), round(h/height, 5)])
+
+    anns.append([image_filename, width, height, boxes])
+
+  return np.array(anns, dtype="object")
+
+★파이썬 클린 코드를 작성할 때 annotation을 많이 쓴다. 
+annotation은 변수 타입, 함수의 입출력값에 대한 타입을 표현하는 방식을 말한다.
+etree로 xml 순회시 특정 태그의 특정 attrib
+
+def write_yolov8_txt(folder, annotation):
+  out_filename = os.path.join(folder,annotation[0][:-3])
+
+★os.path.jon()을 사용하기 위해서는, os 모듈을 import할 필요가 있다.
+os.path.join은 어떤 운영체제든지 경로를 알맞게 생성해서 에러를 발생시켜 주지 않는다.
+파라미터에 생성하고 싶은 경로의 문자열만 입력하면 된다.
+예를 들어서 a/b/c라는 경로를 만들고 싶으면 파라미터에 a, b, c를 넘기면 된다.
+
+  out_filename = os.path.splitext(out_filename)[0]
+
+★파일의 경로를 os.path.splitext 함수의 매개변수로 넣어주시면 두 개의 값이 반환되는데 그 중 두번째 반환값이 파일의 확장자이다.
+참고로 두번째 반환값을 나타내려면 os.path.splitext(file_path) 뒤에 [1]을 붙여줘야 한다.
+첫번째 반환값은 경로에서 확장자를 뺀 나머지 부분이다. 뒤에 [0]을 붙여줘야 한다.
+
+  out_filename = out_filename+'.txt'
+  #print(out_filename)
+  f = open(out_filename,"w+")
+  for box in annotation[3]:
+    f.write("{} {} {} {} {}\n".format(box[0], box[1], box[2], box[3], box[4]))
+  f.close()
+
+★open 함수를 사용해서 파일을 만들거나 열수 있다.
+w : 쓰기용으로 연다, 파일을 먼저 자른다.
++ : 갱신(읽기 및 쓰기)용으로 연다.
+open()을 하면 파일객체를 리턴해준다. 이 객체를 저장해주어야한다.
+file의 첫글자를 따서 f 변수에 파일 객체를 저장을 했다.
+f=open(filename, "w") → 이제부터 파일객체인 f를 사용해서 파일을 
+write,close를 할 수 있다.
+f.close() → 파일닫기
