@@ -105,3 +105,94 @@ file의 첫글자를 따서 f 변수에 파일 객체를 저장을 했다.
 f=open(filename, "w") → 이제부터 파일객체인 f를 사용해서 파일을 
 write,close를 할 수 있다.
 f.close() → 파일닫기
+
+
+😊😊 xml 파일 하나 변환하기 😊😊
+
+dataPath='/home/jupyter/myData/train/xml_labels/'
+destPath='/home/jupyter/myData/train/labels'
+
+#basePath = os.getcwd()
+
+# 파일명을 설정한다.
+xmlFile='Suwon_CH01_20200720_1700_MON_9m_NH_highway_TW5_sunny_FHD.xml'
+
+# 현재 경로 + 파일명
+label_file = os.path.join(dataPath, xmlFile)
+
+# XML을 TXT로 변환한다.
+anns = load_xml_annotations(label_file)
+print(len(anns))
+folderName=os.path.splitext(xmlFile)[0]
+os.makedirs(os.path.join(destPath,folderName), exist_ok=True)
+
+
+# 이미지 파일별로 TXT파일을 저장한다.
+for ann in anns:
+  write_yolov8_txt(os.path.join(destPath,folderName), ann)
+
+★인공 신경망(ANN)
+ANN은 패턴 인식과 머신 러닝이 가능한 딥 러닝 모델이다.
+
+😊😊 train : xml_labels폴더안에 있는 모든 xml파일을 변환하기 😊😊
+
+# xml 목록 읽어오기
+from glob import glob
+dataPath='/home/jupyter/myData/train/xml_labels/'
+xmlList = glob(dataPath+'*.xml')
+basename=[]
+for xmlFile in xmlList:
+    basename.append(os.path.basename(xmlFile))
+
+dataPath='/home/jupyter/myData/train/xml_labels'
+destPath='/home/jupyter/myData/train/labels'
+
+for xmlFile in basename:
+    # 현재 경로 + 파일명
+    label_file = os.path.join(dataPath, xmlFile)
+
+    # XML을 TXT로 변환한다.
+    anns = load_xml_annotations(label_file)
+    #print(len(anns))
+    folderName=os.path.splitext(xmlFile)[0]
+    print(folderName)
+    os.makedirs(os.path.join(destPath,folderName), exist_ok=True)
+
+
+    # 이미지 파일별로 TXT파일을 저장한다.
+    for ann in anns:
+      write_yolov8_txt(os.path.join(destPath,folderName), ann)
+
+😊😊 val : xml_labels폴더안에 있는 모든 xml파일을 변환하기 😊😊
+
+# xml 목록 읽어오기
+from glob import glob
+dataPath='/home/jupyter/myData/val/xml_labels/'
+xmlList = glob(dataPath+'*.xml')
+basename=[]
+for xmlFile in xmlList:
+    basename.append(os.path.basename(xmlFile))
+
+★glob는 파일들의 리스트를 뽑을 때 사용하는데, 
+파일의 경로명을 이용할 수 있다.
+위의 glob() 함수는 인자로 받은 패턴과 이름이 일치하는 모든 파일과 디렉터리의 리스트를 반환한다. 
+패턴을 그냥 *라고 주면 모든 파일과 디렉터리를 볼 수 있다.
+
+dataPath='/home/jupyter/myData/val/xml_labels'
+destPath='/home/jupyter/myData/val/labels'
+
+for xmlFile in basename:
+    # 현재 경로 + 파일명
+    label_file = os.path.join(dataPath, xmlFile)
+
+    # XML을 TXT로 변환한다.
+    anns = load_xml_annotations(label_file)
+    #print(len(anns))
+    folderName=os.path.splitext(xmlFile)[0]
+    print(folderName)
+    os.makedirs(os.path.join(destPath,folderName), exist_ok=True)
+
+
+    # 이미지 파일별로 TXT파일을 저장한다.
+    for ann in anns:
+      write_yolov8_txt(os.path.join(destPath,folderName), ann)
