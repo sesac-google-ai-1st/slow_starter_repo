@@ -32,6 +32,7 @@
   - gsutill 로 연동하면 복사/업로드 과정이 gcsfuse 보다 2배 이상 빠름
 - 가져온 압축파일 압축풀기
 
+=====================================================================================
 
 ### 01-1. 앞에서 생성한 dataset폴더에 버킷 마운트하기  
 ```
@@ -39,6 +40,8 @@ BUCKET_NAME = 'yolostudy'
 MOUNT_PATH ='/home/jupyter/dataset' 
 !gcsfuse --implicit-dirs {BUCKET_NAME} {MOUNT_PATH}
 ```
+
+=====================================================================================
 
 ### 01.2. 압축풀기 
 - 여러가지 압축푸는 방식 존재, 분할압축하여 버킷에 업로드 했다면 분할된 압축파일을 다시 재압축 후 unzip 해야함
@@ -92,6 +95,8 @@ lock = m.Lock()  # 여러개의 폴더의 압축을 풀떄 하나의 폴더의 �
 with concurrent.futures.ProcessPoolExecutor(max_workers=cpu_num-2) as executor:
     executor.map(unzip, zf.infolist())  # map = 여러개의 기능을 동시에 실행
 ```
+
+=====================================================================================
 
 ### 02. 데이터 전처리
 - 전처리 중 발생한 이슈 확인 및 해결
@@ -193,6 +198,112 @@ fileNumCounter:3334
 CPU times: user 50.2 ms, sys: 66.5 ms, total: 117 ms
 Wall time: 141 ms
 ```
+
+- 해당 작업 이후 데이터가 없는 빈 파일들 삭제 진행
+
+=====================================================================================
+
+### 02-2. 파일명 일치 확인 (참조: 파일명일치확인(train).ipynb, 파일명일치확인(val).ipynb)
+1) txt파일명이 잘못된 것 수정
+   - train 파일의 images와 labels의 파일명이 일치하지 않는것 약 150개 발견
+   - 이미지 이름은 'Suwon_CH02_20200721_2130_TUE_9m_NH_highway_TW5_sunny_FHD.png'
+   - 텍스트 파일은 'Suwon_CH02_20200721_2130_TUE_9m_NH_highway_TW5_sunny_FHD 001.txt'
+   - txt파일명에 언더바 대신 공백이 있는 것 확인
+   - 아래 코드로 txt 파일명에 언더바(_) 추가 하여 해결
+   ```
+   falseLabels = glob('/home/jupyter/highway/train/labels/Suwon_CH02_20200721_2130*.txt')
+
+   for falseLabel in falseLabels:
+       newLabel = falseLabel.replace(' ','_')
+       print(newLabel)
+       os.rename(falseLabel, newLabel)
+   ```
+   
+=====================================================================================
+
+2) txt 파일명 수정 후에도 여전히 iamges, rabels 데이터 개수 불일치 확인
+- labels 폴더에 txt파일이 3개 더 많은것을 확인한 후 결측치인지 확인하기
+- labels 폴더에서 아래 3개의 파일이 images 파일에 없는것을 확인
+   - Suwon_CH02_20200721_1530_TUE_9m_NH_highway_TW5_sunny_FHD_069.txt
+   - uwon_CH03_20200722_1900_WED_9m_NH_highway_OW5_sunny_FHD_051.txt
+   - Suwon_CH03_20200722_1900_WED_9m_NH_highway_OW5_sunny_FHD_052.txt
+- 원본 압축파일에서 확인해본 결과 해당 파일이 없는것을 확인
+- 결측치로 판단하여 labels 폴더에서 해당 텍스트 파일 삭제하는 코드 작성하여 실행
+```
+# split_labelfiles 에는 labels폴더 하위의 데이터리스트들의 이름이 담겨잇음 
+true_count=0
+false_count=0
+for label in split_labelfiles:
+    if label in split_imagefiles:
+        true_count+=1
+    else:
+        false_count+=1
+        print('불일치 파일: {}'.format(label))
+        falsefilePath = os.path.join(labelfullPath,label + '.txt')
+        #print(falsefilePath)
+        #해당파일 삭제
+        os.remove(falsefilePath)
+        print('파일 삭제 완료!!!')
+        
+
+print(f'true_count:{true_count}')
+print(f'false_count:{false_count}')
+```
+- val 데이터 폴더 아래에서도 한개의 label 파일이 많은것을 확인하여 차집합 계산식을 활용해 검출하여 삭제함
+   - 결측 파일 검출 
+   ```
+   s1 = set(split_imagefiles)
+   len(s1)
+   s2 = set(split_labelfiles)
+   len(s2)
+   s2-s1
+   ```
+
+   ```
+   {'Suwon_CH02_20200721_2030_TUE_9m_NH_highway_TW5_sunny_FHD_001'}
+   ```
+   - 결측 파일 삭제
+  ```
+   os.remove('/home/jupyter/highway/val/labels/Suwon_CH02_20200721_2030_TUE_9m_NH_highway_TW5_sunny_FHD_001.txt')
+  ```
+=====================================================================================
+
+### 02-3. VOLO nano model test 중 train의 png 파일 하나를 읽지 못하는 메시지 발생한것 확인
+- 'Suwon_CH02_20200721_2130_TUE_9m_NH_highway_TW5_sunny_FHD_096.png'
+- highway/train/images/Suwon_CH02_20200722_1530_WED_9m_NH_highway_TW5_rainy_FHD_048.png 파일을 확인해보니 0KB인것 확인함
+- 압축 풀기 전 원본 데이터 확인해보니 해당 파일 존재함
+- 압축 푸는과정에서 손상난것으로 추정
+- 손상파일 삭제 후, 원본 압축파일에서 해당 png 파일만 추출해서 업로드하는 식으로 파일 교체함
+
+
+=====================================================================================
+
+
+### 03. 모델 학습시키기 (참조: 고속도로CCTV데이터기반차량인식.ipynb)
+
+1) 1차 테스트:nano model test - epochs=75 설정
+
+![confusion_matrix_normalized](https://github.com/sesac-google-ai-1st/slow_starter_repo/assets/147117477/05cf1fe1-f500-4725-af60-c1fc2ec6ca4c)
+
+![results](https://github.com/sesac-google-ai-1st/slow_starter_repo/assets/147117477/424e7f52-5379-4f4d-b2f4-a5bea0f6aef0)
+
+### 결과 분석 -> mAP50-95 의 값이 0.76까지 균등하게 증가하였고 loss 값도 꾸준하게 감소하였다.
+<br><br>
+
+2) 2차 테스트: nano model test - epochs=150 설정
+
+![confusion_matrix_normalized](https://github.com/sesac-google-ai-1st/slow_starter_repo/assets/147117477/4ba3186d-7e05-4707-bd8a-870f11ab367d)
+
+![results](https://github.com/sesac-google-ai-1st/slow_starter_repo/assets/147117477/0f440302-c88e-4249-b3b1-e1fcf363e95f)
+
+
+### 결과 분석 -> mAP50-95 의 값이 0.77까지 추가 상승한것을 확인함
+
+
+
+## 시간적 한계로 모델 학습 테스트는 여기까지만 수행하였습니다.
+## epochs 수를 좀더 늘리면 mAP50-95 값이 조금 도 올라갈 수도 있을 것이라 추정중입니다.
+
 
 
 
