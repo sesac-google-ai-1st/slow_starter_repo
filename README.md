@@ -25,7 +25,7 @@
    - 대용량 파일이므로 한번에 업로드 중 네트워크 오류 발생시 다시 처음부터 업로드를 해야하는 위험성이 잇음
    - 반디집을 이용해 분할 압축 후 버킷에 업로드 하여 테스트 진행 시 재압축하는식으로 하는 방식도 가능(문제 발생시 재업로드 편의성 증가)
 
-### 01. 데이터셋 준비하기
+### 01. 데이터셋 준비하기 (참고: highway_project.ipynb )
 - 버킷과 gcp로 실행한 jpyter notebook 연동
   - gcsfuse 로 마운트(colab의 드라이브 마운트와 같이 실시간 연동하는 식)
   - gsutill 로 접속하여 복사(cp) 하거나 다운로드를 통해 jpyter lab의 local로 옮겨서 사용(원본은 변화안됨, 딴사람의 버킷에 접속하여 다운가능)
@@ -43,7 +43,7 @@ MOUNT_PATH ='/home/jupyter/dataset'
 
 ===================================================================
 
-### 01-2. 압축풀기 
+### 01-2. 압축풀기 (참고: highway_project.ipynb )
 - 여러가지 압축푸는 방식 존재, 분할압축하여 버킷에 업로드 했다면 분할된 압축파일을 다시 재압축 후 unzip 해야함
 ```
 !zip -s 0 image.zip --out iamge_total.zip
@@ -98,7 +98,7 @@ with concurrent.futures.ProcessPoolExecutor(max_workers=cpu_num-2) as executor:
 
 ===================================================================
 
-### 02. 데이터 전처리
+### 02. 데이터 전처리 (참고: highway_project.ipynb )
 - 전처리 중 발생한 이슈 확인 및 해결
 
 ### 02-1. train/val 폴더를 생성하여 png 파일 전부 몰아넣기
@@ -282,6 +282,9 @@ print(f'false_count:{false_count}')
 ### 03. 모델 학습시키기 (참조: 고속도로CCTV데이터기반차량인식.ipynb)
 
 1) 1차 테스트:nano model test - epochs=75 설정
+```
+!yolo task=detect mode=train model=yolov8n.pt data={dataYaml} epochs=75 imgsz=640 plots=True batch=16 device=0,1 cache=True
+```
 
 ![confusion_matrix_normalized](https://github.com/sesac-google-ai-1st/slow_starter_repo/assets/147117477/05cf1fe1-f500-4725-af60-c1fc2ec6ca4c)
 
@@ -291,6 +294,9 @@ print(f'false_count:{false_count}')
 <br><br>
 
 2) 2차 테스트: nano model test - epochs=150 설정
+```
+!yolo task=detect mode=train model=yolov8n.pt data={dataYaml} epochs=150 imgsz=640 plots=True batch=16 device=0,1 cache=True
+```
 
 ![confusion_matrix_normalized](https://github.com/sesac-google-ai-1st/slow_starter_repo/assets/147117477/4ba3186d-7e05-4707-bd8a-870f11ab367d)
 
