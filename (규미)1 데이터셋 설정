@@ -1,0 +1,114 @@
+!mkdir /home/jupyter/dataset
+
+BUCKET_NAME='yolostudy'
+MOUNT_PATH ='/home/jupyter/dataset' 
+!gcsfuse --implicit-dirs {BUCKET_NAME} {MOUNT_PATH}
+#!gcsfuse --implicit-dirs slow_starter /home/jupyter/dataset
+
+😊😊 훈련용 이미지 압축풀기 😊😊
+
+zipfilePath = '/home/jupyter/train_images.zip'
+destPath = '/home/jupyter/myData/train/images'
+
+%%time
+import zipfile
+
+★zipfile 모듈은 파이썬 내장 모듈 중 하나로, zip파일을 읽고 쓰는데 사용되는 모듈이다.
+이 모듈을 사용하면 zip 파일 내부의 파일을 열거하고,읽고,쓰고,수정할 수 있다.
+zipfile 모듈은 별도의 설치 과정이 필요 없다. 모듈을 사용하려면 import를 하면 된다.
+
+import multiprocessing
+
+★처리 속도를 높이기 위해 멀티 프로세싱을 사용할 수 있다.
+
+import concurrent.futures
+
+★병렬화를 통해 속도를 향상시킨다.
+
+
+def unzip(files):
+    with lock:
+        zf.extract(files, path=destPath)
+
+
+zf = zipfile.ZipFile(zipfilePath)    
+m = multiprocessing.Manager()
+lock = m.Lock()
+ZipInfo=[]
+with concurrent.futures.ProcessPoolExecutor(max_workers=16) as executor:
+    executor.map(unzip, zf.infolist())
+
+★ProcessPoolExcutor 클래스를 이용한 multiprocessing 모듈은 부모와 자식 프로세스 사이에
+pickle 모듈을 이용한 직렬화와 역직렬화가 일어나야 한다.
+프로그램의 다른 부분과 상태를 공유할 필요가 없고 부모와 자식 사이에 주고받아야하는
+데이터 크기는 작지만 자식 프로세스가 데이터로 인한 연산량이 큰 최대공약수 알고리즘이나
+다른 수학 알고리즘에 적합하다.
+
+😊😊 훈련용 레이블 압축풀기 😊😊
+
+%%time
+
+zipfilePath = '/home/jupyter/train_labels.zip'
+destPath = '/home/jupyter/myData/train/xml_labels'
+
+import zipfile
+import multiprocessing
+import concurrent.futures
+
+def unzip(files):
+    with lock:
+        zf.extract(files, path=destPath)
+
+
+zf = zipfile.ZipFile(zipfilePath)    
+m = multiprocessing.Manager()
+lock = m.Lock()
+ZipInfo=[]
+with concurrent.futures.ProcessPoolExecutor(max_workers=16) as executor:
+    executor.map(unzip, zf.infolist())
+
+😊😊 검증용 이미지 압축풀기 😊😊
+
+%%time
+
+zipfilePath = '/home/jupyter/val_images.zip'
+destPath = '/home/jupyter/myData/val/images'
+
+import zipfile
+import multiprocessing
+import concurrent.futures
+
+def unzip(files):
+    with lock:
+        zf.extract(files, path=destPath)
+
+
+zf = zipfile.ZipFile(zipfilePath)    
+m = multiprocessing.Manager()
+lock = m.Lock()
+ZipInfo=[]
+with concurrent.futures.ProcessPoolExecutor(max_workers=16) as executor:
+    executor.map(unzip, zf.infolist())
+
+😊😊 검증용 레이블 압축풀기 😊😊
+
+%%time
+
+zipfilePath = '/home/jupyter/val_labels.zip'
+destPath = '/home/jupyter/myData/val/xml_labels'
+
+import zipfile
+import multiprocessing
+import concurrent.futures
+
+def unzip(files):
+    with lock:
+        zf.extract(files, path=destPath)
+
+
+zf = zipfile.ZipFile(zipfilePath)    
+m = multiprocessing.Manager()
+lock = m.Lock()
+ZipInfo=[]
+with concurrent.futures.ProcessPoolExecutor(max_workers=16) as executor:
+    executor.map(unzip, zf.infolist())
